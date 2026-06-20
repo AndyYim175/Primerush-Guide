@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrimeRush Formula & Progression Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --fg: #ffffff;
+            --fg-dim: #888888;
+            --accent: #00ff88;
+            --accent-dim: #00cc6a;
+            --danger: #ff4444;
+            --button-bg: #1a1a1a;
+            --button-hover: #2a2a2a;
+            --button-active: #3a3a3a;
+            --card-bg: #111111;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f5f5f5;
+                --fg: #0a0a0a;
+                --fg-dim: #777777;
+                --accent: #00aa55;
+                --accent-dim: #008844;
+                --danger: #cc3333;
+                --button-bg: #ffffff;
+                --button-hover: #e5e5e5;
+                --button-active: #d5d5d5;
+                --card-bg: #eeeeee;
+            }
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            color: var(--fg);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Webkit Scrollbar Customization matching the main game */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--button-bg);
+            border-radius: 4px;
+            border: 1px solid var(--fg-dim);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Styled game slider metrics */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--fg-dim);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Custom buttons matching primary and secondary style sheets */
+        .btn-metric {
+            background: var(--button-bg);
+            color: var(--fg);
+            border: 2px solid var(--fg-dim);
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .btn-metric:hover {
+            background: var(--button-hover);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .btn-metric.active {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+            border-color: var(--accent) !important;
+        }
+
+        /* Tab Layout Styling with robust encapsulation overrides */
+        .tab-btn {
+            background: transparent;
+            color: var(--fg-dim);
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: var(--fg);
+        }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* Tab Panel visibilities with high defensive specificity */
+        .tab-pane {
+            display: none !important;
+        }
+        .tab-pane.active {
+            display: block !important;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: 'var(--bg)',
+                        cardbg: 'var(--card-bg)',
+                        accent: 'var(--accent)',
+                        accentdim: 'var(--accent-dim)',
+                        danger: 'var(--danger)',
+                        fdim: 'var(--fg-dim)',
+                        buttonbg: 'var(--button-bg)',
+                        buttonhover: 'var(--button-hover)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen overflow-y-auto p-4 md:p-8">
+
+    <header class="max-w-7xl mx-auto mb-8 border-b border-accent/20 pb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-accent tracking-wider">Prime 𝑹𝑼𝑺𝑯</h1>
+                <p class="text-fdim text-sm mt-1">Mathematical Formula, Progression, & Analytics Explorer</p>
+            </div>
+            <div class="bg-cardbg border border-fdim/20 rounded-lg p-3 text-xs flex gap-6">
+                <div>
+                    <span class="text-accent block font-bold">MODE SYSTEM</span>
+                    <span>Dual Progression</span>
+                </div>
+                <div>
+                    <span class="text-accent block font-bold">MAX SPAN</span>
+                    <span>1 ~ 193M+</span>
+                </div>
+                <div>
+                    <span class="text-accent block font-bold">SCALING METHOD</span>
+                    <span>Exponential Decay</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-4 md:gap-8 mt-6 border-b border-fdim/10">
+            <button class="tab-btn active pb-3 text-sm md:text-base" onclick="switchTab('tab-simulator', this)">1. Progression Simulator</button>
+            <button class="tab-btn pb-3 text-sm md:text-base" onclick="switchTab('tab-formulas', this)">2. Formulas & Graphs</button>
+            <button class="tab-btn pb-3 text-sm md:text-base" onclick="switchTab('tab-payouts', this)">3. Standard Payout Matrix</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+        
+        <!-- ==============================================
+             TAB 1: PROGRESSION SIMULATOR FOR MAIN MODE
+             ============================================== -->
+        <section id="tab-simulator" class="tab-pane active">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Panel: Live Simulator Inputs -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    <div class="bg-cardbg border-2 border-accent/30 rounded-xl p-6 shadow-xl">
+                        <h2 class="text-lg font-bold text-accent border-b border-accent/20 pb-3 mb-4">⚙️ LIVE PROGRESSION SIMULATOR</h2>
+                        
+                        <!-- Sliders for formula interactions -->
+                        <div class="flex flex-col gap-5 mb-6">
+                            <div>
+                                <div class="flex justify-between text-xs uppercase tracking-wider text-fdim mb-1">
+                                    <label for="simDefeated">Numbers Defeated (Classic):</label>
+                                    <span class="text-accent font-bold" id="lblSimDefeated">15</span>
+                                </div>
+                                <input class="w-full cursor-ew-resize" type="range" id="simDefeated" min="0" max="60" value="15" oninput="updateSimulation()">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs uppercase tracking-wider text-fdim mb-1">
+                                    <label for="simTimeRatio">Time Remaining:</label>
+                                    <span class="text-accent font-bold" id="lblSimTimeRatio">75%</span>
+                                </div>
+                                <input class="w-full cursor-ew-resize" type="range" id="simTimeRatio" min="0" max="100" value="75" oninput="updateSimulation()">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs uppercase tracking-wider text-fdim mb-1">
+                                    <label for="simZenTier">Zen Spawn Tier:</label>
+                                    <span class="text-accent font-bold" id="lblSimZenTier">5</span>
+                                </div>
+                                <input class="w-full cursor-ew-resize" type="range" id="simZenTier" min="1" max="20" value="5" oninput="updateSimulation()">
+                            </div>
+                        </div>
+
+                        <!-- Live Computational Outputs -->
+                        <div class="bg-darkbg/80 border border-fdim/10 rounded-lg p-4 flex flex-col gap-3 text-sm mb-4">
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim">Active Phase:</span>
+                                <span class="font-bold text-accent" id="outPhase">Phase 1</span>
+                            </div>
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim">Classic Difficulty:</span>
+                                <span class="font-bold text-accent" id="outDifficulty">1.30x</span>
+                            </div>
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim">Classic Max Spawn:</span>
+                                <span class="font-bold text-accent" id="outClassicCap">417</span>
+                            </div>
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim">Classic Time Allocated:</span>
+                                <span class="font-bold text-accent" id="outClassicTime">10.00s</span>
+                            </div>
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim text-accent">Zen Spawn Cap:</span>
+                                <span class="font-bold text-accent" id="outZenCap">93,132</span>
+                            </div>
+                            <div class="flex justify-between border-b border-fdim/10 pb-1">
+                                <span class="text-fdim">Base Point Output:</span>
+                                <span class="font-bold text-accent" id="outPoints">11 pts</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-fdim">Active Primes Pool:</span>
+                                <span class="font-bold text-accent" id="outPrimes">[2, 3, 5, 7]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Live Detailed Steps & Rank Accrual Map -->
+                <div class="lg:col-span-7 flex flex-col gap-6">
+                    <!-- Live Algebraic Steps Log Card -->
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6">
+                        <h3 class="text-sm font-bold text-accent tracking-widest uppercase mb-4">🔍 LIVE COMPUTATIONAL FORMULA STEP-LOG</h3>
+                        <div class="bg-darkbg/60 p-4 border border-fdim/10 rounded-lg" id="outFormulaStep">
+                            <!-- Populated dynamically via JS on slider changes -->
+                        </div>
+                    </div>
+
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6">
+                        <h3 class="text-sm font-bold text-accent tracking-widest uppercase mb-4">🏆 RANK ACCRUAL GAP MAP</h3>
+                        <p class="text-xs text-fdim mb-4">Baseline rankings thresholds used for standard matching comparisons vs Zen thresholds.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-darkbg p-3 border border-fdim/10 rounded-lg text-center">
+                                <span class="text-xs text-fdim block">C Tier Bracket</span>
+                                <span class="text-sm font-bold text-accent">750 - 1,200</span>
+                                <span class="text-[10px] text-fdim block mt-1">(Zen: 800 - 2k)</span>
+                            </div>
+                            <div class="bg-darkbg p-3 border border-fdim/10 rounded-lg text-center">
+                                <span class="text-xs text-fdim block">B Tier Bracket</span>
+                                <span class="text-sm font-bold text-accent">1,200 - 1,600</span>
+                                <span class="text-[10px] text-fdim block mt-1">(Zen: 2k - 5k)</span>
+                            </div>
+                            <div class="bg-darkbg p-3 border border-fdim/10 rounded-lg text-center">
+                                <span class="text-xs text-fdim block">A Tier Bracket</span>
+                                <span class="text-sm font-bold text-accent">1,600 - 1,900</span>
+                                <span class="text-[10px] text-fdim block mt-1">(Zen: 5k - 12.5k)</span>
+                            </div>
+                            <div class="bg-darkbg p-3 border border-fdim/10 rounded-lg text-center">
+                                <span class="text-xs text-fdim block">S / S+ Standard</span>
+                                <span class="text-sm font-bold text-accent">1,900 - 2,250+</span>
+                                <span class="text-[10px] text-fdim block mt-1">(Zen: 12.5k - 20k+)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 2: MATHEMATICAL FORMULAS & GRAPHS
+             ============================================== -->
+        <section id="tab-formulas" class="tab-pane">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Formulas Description Column -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    <!-- Formulas Engine Card -->
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6 shadow-xl h-full flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-accent border-b border-accent/20 pb-3 mb-4">📐 GAMEPLAY ENGINE FORMULAS</h2>
+                            <p class="text-sm text-fdim leading-relaxed mb-6">
+                                The mechanical pacing of PrimeRush is driven by deterministic, stage-aware exponential and algebraic curves. Standard gameplay leverages segmented phases to ramp up numerical factor limits, whereas Zen Practice scaling operates on a smooth, custom exponential tier multiplier.
+                            </p>
+
+                            <div class="space-y-6">
+                                <!-- Point Calculation Block -->
+                                <div class="border-l-4 border-accent pl-4 py-1">
+                                    <h3 class="text-sm font-bold text-accent uppercase tracking-wider mb-2">1. Classic Mode Points Calculation</h3>
+                                    <p class="text-xs text-fdim mb-3">
+                                        The primary core points earned per prime factorization decay proportionally against elapsed time. It is driven by a sub-linear power equation of <code class="text-accent bg-darkbg px-1 rounded font-bold">t^0.55</code>, rewarding instant reactions heavily while preserving a respectable baseline for steady mathematical solvers:
+                                    </p>
+                                    <div class="bg-darkbg/55 p-3 rounded-lg border border-fdim/10 overflow-x-auto mb-2">
+                                        <code class="text-accent block font-bold text-xs whitespace-nowrap">Points = ⌈10 × Difficulty × (TimeRatio)^0.55⌉</code>
+                                    </div>
+                                    <p class="text-[10px] text-fdim">
+                                        Where <code class="text-fg px-1">TimeRatio</code> represents the remaining percentage of the active timer bar ($1.0 \to 0.0$).
+                                    </p>
+                                </div>
+
+                                <!-- Phase Split Math Block -->
+                                <div class="border-l-4 border-accent pl-4 py-1">
+                                    <h3 class="text-sm font-bold text-accent uppercase tracking-wider mb-2">2. Standard Progression Phases</h3>
+                                    <p class="text-xs text-fdim mb-3">
+                                        Standard mode calculations segment gameplay based on <code class="text-accent font-bold">n</code> (total numbers defeated):
+                                    </p>
+                                    
+                                    <div class="bg-darkbg/55 p-3 rounded-lg border border-fdim/10 text-[11px] space-y-3">
+                                        <div>
+                                            <h4 class="text-accent font-bold text-xs mb-1">■ Phase 1 (n ≤ 15 Numbers Defeated):</h4>
+                                            <p class="text-fdim">Spawns elements of pool <code class="text-fg">[2, 3, 5, 7]</code></p>
+                                            <p class="text-fdim">Difficulty (Scaling): <code class="text-fg font-bold">D(n) = 1 + 0.02n</code></p>
+                                            <p class="text-fdim">Spawn Cap: <code class="text-fg font-bold">Cap(n) = 100 × 1.1^n</code></p>
+                                            <p class="text-fdim">Max Time: <code class="text-fg font-bold">Time(n) = 8.5s + 0.1n</code></p>
+                                        </div>
+                                        <hr class="border-fdim/10">
+                                        <div>
+                                            <h4 class="text-accent font-bold text-xs mb-1">■ Phase 2 (15 &lt; n ≤ 30):</h4>
+                                            <p class="text-fdim">Spawns elements of pool <code class="text-fg">[2, 3, 5, 7, 11, 13]</code></p>
+                                            <p class="text-fdim">Difficulty (Scaling): <code class="text-fg font-bold">D(n) = 0.7 + 0.04n</code></p>
+                                            <p class="text-fdim">Spawn Cap: <code class="text-fg font-bold">Cap(n) = 50 × 1.1^n</code></p>
+                                            <p class="text-fdim">Max Time: <code class="text-fg font-bold">Time(n) = 7.0s + 0.2n</code></p>
+                                        </div>
+                                        <hr class="border-fdim/10">
+                                        <div>
+                                            <h4 class="text-accent font-bold text-xs mb-1">■ Phase 3 (n &gt; 30):</h4>
+                                            <p class="text-fdim">Spawns elements of pool <code class="text-fg">[2, 3, 5, 7, ... 19, 23]</code></p>
+                                            <p class="text-fdim">Difficulty (Scaling): <code class="text-fg font-bold">D(n) = -1.1 + 0.1n</code></p>
+                                            <p class="text-fdim">Spawn Cap: <code class="text-fg font-bold">Cap(n) = 0.35 × 1.25^n</code></p>
+                                            <p class="text-fdim">Max Time: <code class="text-fg font-bold">Time(n) = 13s + 0.5√(n - 30)</code></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Zen Mode formulas Block -->
+                                <div class="border-l-4 border-accent pl-4 py-1">
+                                    <h3 class="text-sm font-bold text-accent uppercase tracking-wider mb-2">3. Zen Practice Mode Calculations</h3>
+                                    <p class="text-xs text-fdim mb-3">
+                                        Zen Mode avoids temporal decay completely. To balance difficulty increments, it implements a tier-based scaling curve:
+                                    </p>
+                                    <div class="bg-darkbg/55 p-3 rounded-lg border border-fdim/10 space-y-1 text-xs">
+                                        <code class="text-accent block font-bold">Base Spawn Cap = 100</code>
+                                        <code class="text-accent block font-bold">Zen Cap(Tier) = 100 × (1.25^5)^(Tier - 1)</code>
+                                        <code class="text-accent block font-bold">Point Factor = ⌈10 × Tier⌉</code>
+                                    </div>
+                                    <p class="text-[10px] text-fdim mt-2">
+                                        Each difficulty level scales the overall numeric factor envelope by approximately <span class="text-fg font-bold">~3.05x</span> compared to the previous Tier, capping at Tier 20 (<code class="text-fg">Cap ≈ 193,428,145</code>).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zen specific level breakdown card -->
+                        <div class="mt-6 pt-6 border-t border-fdim/10">
+                            <h3 class="text-xs font-bold text-accent uppercase tracking-widest mb-3">🔬 ZEN PRACTICE POOL ALIGNMENTS</h3>
+                            <div class="grid grid-cols-1 gap-2 text-[11px]">
+                                <div class="p-2 bg-darkbg rounded border border-fdim/10">
+                                    <strong class="text-accent block">Pool Level 1:</strong>
+                                    Primes: <span class="text-fg">[2, 3, 5, 7]</span>
+                                </div>
+                                <div class="p-2 bg-darkbg rounded border border-fdim/10">
+                                    <strong class="text-accent block">Pool Level 2:</strong>
+                                    Primes: <span class="text-fg">[2, 3, 5, 7, 11, 13]</span>
+                                </div>
+                                <div class="p-2 bg-darkbg rounded border border-fdim/10">
+                                    <strong class="text-accent block">Pool Level 3:</strong>
+                                    Primes: <span class="text-fg">[2, 3, 5, 7, ... 19, 23]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Visual Graphs Column -->
+                <div class="lg:col-span-7 flex flex-col gap-6">
+                    <!-- Spawning Caps Chart Block -->
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                            <div>
+                                <h2 class="text-sm font-bold text-accent tracking-wide uppercase">SPAWNING CAPS SCALING METRIC</h2>
+                                <p class="text-[11px] text-fdim">Comparing Classic Progression (n) limits against Zen Tier limits (Logarithmic Comparison)</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1 btn-metric active text-[10px] transition" id="btnScaleLog" onclick="toggleCapScale('logarithmic')">Log Scale</button>
+                                <button class="px-3 py-1 btn-metric text-[10px] transition" id="btnScaleLinear" onclick="toggleCapScale('linear')">Linear Scale</button>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-64">
+                            <canvas id="capChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Points Decay Chart Block -->
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6">
+                        <h3 class="text-sm font-bold text-accent tracking-wider uppercase mb-2">⚡ POINT DECAY VS. TIME ELAPSED</h3>
+                        <p class="text-[11px] text-fdim mb-4">Shows how point rewards diminish as standard timer counts down on the sub-linear curve.</p>
+                        <div class="relative w-full h-56">
+                            <canvas id="decayChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Allocated Timer Chart Block -->
+                    <div class="bg-cardbg border border-fdim/20 rounded-xl p-6">
+                        <h3 class="text-sm font-bold text-accent tracking-wider uppercase mb-2">⏳ ALLOCATED TIME SCALE BY PHASE</h3>
+                        <p class="text-[11px] text-fdim mb-4">Demonstrates why high-phase limits grant longer timers for complex numbers.</p>
+                        <div class="relative w-full h-56">
+                            <canvas id="timerChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 3: COMPREHENSIVE PAYOUT MATRIX
+             ============================================== -->
+        <section id="tab-payouts" class="tab-pane space-y-6">
+            <div class="bg-cardbg border border-fdim/20 rounded-xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-fdim/20 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-accent">📊 CLASSIC MODE PAYOUT MATRIX</h2>
+                        <p class="text-xs text-fdim mt-1">Detailed computational overview of spawning, difficulty metrics, and relative score outputs across 60 progression stages.</p>
+                    </div>
+                    
+                    <!-- Jump to Phase control -->
+                    <div class="flex gap-2">
+                        <button class="px-3 py-1 btn-metric text-xs transition" onclick="scrollToPhase(1)">Phase 1</button>
+                        <button class="px-3 py-1 btn-metric text-xs transition" onclick="scrollToPhase(16)">Phase 2</button>
+                        <button class="px-3 py-1 btn-metric text-xs transition" onclick="scrollToPhase(31)">Phase 3</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-darkbg text-accent uppercase tracking-wider border-b border-fdim/20">
+                                <th class="p-3 border-r border-fdim/10">Defeated (n)</th>
+                                <th class="p-3 border-r border-fdim/10">Spawn Cap</th>
+                                <th class="p-3 border-r border-fdim/10">Difficulty</th>
+                                <th class="p-3 border-r border-fdim/10">Max Time</th>
+                                <th class="p-3 border-r border-fdim/10 text-center">Payout 100%</th>
+                                <th class="p-3 border-r border-fdim/10 text-center">Payout 75%</th>
+                                <th class="p-3 border-r border-fdim/10 text-center">Payout 50%</th>
+                                <th class="p-3 text-center">Payout 25%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payoutMatrixBody" class="divide-y divide-fdim/10">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Global Chart Instance pointers
+        let capChartInstance = null;
+        let decayChartInstance = null;
+        let timerChartInstance = null;
+
+        let activeScaleMode = 'logarithmic'; // logarithmic or linear
+
+        // Standard Spawning limit math helpers
+        function getClassicCap(n) {
+            if (n <= 15) return Math.round(100 * Math.pow(1.1, n));
+            if (n <= 30) return Math.round(50 * Math.pow(1.1, n));
+            return Math.round(0.35 * Math.pow(1.25, n));
+        }
+
+        // Standard Max timer allocations helpers
+        function getClassicTime(n) {
+            if (n <= 15) return 8.5 + 0.1 * n;
+            if (n <= 30) return 7 + 0.2 * n;
+            return 13 + 0.5 * Math.sqrt(n - 30);
+        }
+
+        // Standard Difficulty Multiplier math helpers
+        function getClassicDifficulty(n) {
+            if (n <= 15) return 1 + 0.02 * n;
+            if (n <= 30) return 0.7 + 0.04 * n;
+            return -1.1 + 0.1 * n;
+        }
+
+        // Zen Mode spawn cap calculator based on Tier
+        function getZenCap(tier) {
+            return Math.round(100 * Math.pow(Math.pow(1.25, 5), tier - 1));
+        }
+
+        // Point calculator using exponential time decay logic
+        function calculatePoints(difficulty, timeRatio) {
+            return Math.ceil(10 * difficulty * Math.pow(timeRatio, 0.55));
+        }
+
+        function getThemeColors() {
+            const isLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (isLight) {
+                return {
+                    bg: '#f5f5f5',
+                    fg: '#0a0a0a',
+                    fgDim: '#777777',
+                    accent: '#00aa55',
+                    accentDim: '#008844',
+                    danger: '#cc3333',
+                    cardBg: '#eeeeee',
+                    buttonBg: '#ffffff',
+                    buttonHover: '#e5e5e5',
+                    chartGrid: 'rgba(10, 10, 10, 0.08)',
+                    chartBgAccent: 'rgba(0, 170, 85, 0.1)',
+                    phase1Color: 'rgba(0, 170, 85, 0.7)',
+                    phase2Color: 'rgba(119, 119, 119, 0.7)',
+                    phase3Color: 'rgba(204, 51, 51, 0.7)'
+                };
+            } else {
+                return {
+                    bg: '#0a0a0a',
+                    fg: '#ffffff',
+                    fgDim: '#888888',
+                    accent: '#00ff88',
+                    accentDim: '#00cc6a',
+                    danger: '#ff4444',
+                    cardBg: '#111111',
+                    buttonBg: '#1a1a1a',
+                    buttonHover: '#2a2a2a',
+                    chartGrid: 'rgba(255, 255, 255, 0.08)',
+                    chartBgAccent: 'rgba(0, 255, 136, 0.1)',
+                    phase1Color: 'rgba(0, 255, 136, 0.7)',
+                    phase2Color: 'rgba(136, 136, 136, 0.7)',
+                    phase3Color: 'rgba(255, 68, 68, 0.7)'
+                };
+            }
+        }
+
+        // Navigation Switcher Logic
+        function switchTab(tabId, triggerBtn) {
+            // Deactivate all tab elements
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            // Activate chosen components
+            triggerBtn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            // Handle reactive chart rendering adjustments upon viewing formulas tab
+            if (tabId === 'tab-formulas') {
+                setTimeout(() => {
+                    if (capChartInstance) capChartInstance.resize();
+                    if (decayChartInstance) decayChartInstance.resize();
+                    if (timerChartInstance) timerChartInstance.resize();
+                }, 50);
+            }
+        }
+
+        // Jump to row helper inside Tab 3 Payout table
+        function scrollToPhase(numberDefeated) {
+            const row = document.getElementById(`payout-row-${numberDefeated}`);
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Highlight the row temporarily
+                row.classList.add('bg-accent/10');
+                setTimeout(() => {
+                    row.classList.remove('bg-accent/10');
+                }, 2000);
+            }
+        }
+
+        // Build Tab 3 Lookup Table values dynamically
+        function generatePayoutTable() {
+            const tbody = document.getElementById('payoutMatrixBody');
+            tbody.innerHTML = '';
+
+            for (let n = 0; n <= 60; n++) {
+                const diff = getClassicDifficulty(n);
+                const cap = getClassicCap(n);
+                const time = getClassicTime(n);
+
+                // Point payouts across standard thresholds
+                const pay100 = calculatePoints(diff, 1.0);
+                const pay75 = calculatePoints(diff, 0.75);
+                const pay50 = calculatePoints(diff, 0.5);
+                const pay25 = calculatePoints(diff, 0.25);
+
+                // Assign phase contextual background color rules
+                let phaseClass = '';
+                if (n <= 15) phaseClass = 'border-l-4 border-accent/40';
+                else if (n <= 30) phaseClass = 'border-l-4 border-fdim/40 bg-fdim/5';
+                else phaseClass = 'border-l-4 border-danger/40 bg-danger/5';
+
+                const tr = document.createElement('tr');
+                tr.id = `payout-row-${n}`;
+                tr.className = `${phaseClass} hover:bg-accent/5 transition duration-150`;
+                tr.innerHTML = `
+                    <td class="p-3 font-bold border-r border-fdim/10">${n}</td>
+                    <td class="p-3 border-r border-fdim/10">${cap.toLocaleString()}</td>
+                    <td class="p-3 border-r border-fdim/10 font-bold text-accent">${diff.toFixed(2)}x</td>
+                    <td class="p-3 border-r border-fdim/10">${time.toFixed(2)}s</td>
+                    <td class="p-3 text-center border-r border-fdim/10 font-bold">${pay100} pts</td>
+                    <td class="p-3 text-center border-r border-fdim/10">${pay75} pts</td>
+                    <td class="p-3 text-center border-r border-fdim/10">${pay50} pts</td>
+                    <td class="p-3 text-center font-semibold text-fdim">${pay25} pts</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Setup environment listeners for live preferences updates
+        window.onload = function() {
+            initCapChart();
+            initDecayChart();
+            initTimerChart();
+            updateSimulation();
+            generatePayoutTable();
+        };
+
+        // Redraw dynamic axes and elements when light/dark theme shift triggers
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function() {
+            updateChartThemes();
+            updateSimulation();
+        });
+
+        function updateSimulation() {
+            // Read UI inputs
+            const defeated = parseInt(document.getElementById('simDefeated').value);
+            const timeRatio = parseInt(document.getElementById('simTimeRatio').value) / 100;
+            const zenTier = parseInt(document.getElementById('simZenTier').value);
+
+            // Update sliders display labels
+            document.getElementById('lblSimDefeated').textContent = defeated;
+            document.getElementById('lblSimTimeRatio').textContent = (timeRatio * 100).toFixed(0) + '%';
+            document.getElementById('lblSimZenTier').textContent = zenTier;
+
+            // Compute dynamic progression analytics
+            let phase = 1;
+            let primes = "[2, 3, 5, 7]";
+            if (defeated > 15 && defeated <= 30) {
+                phase = 2;
+                primes = "[2, 3, 5, 7, 11, 13]";
+            } else if (defeated > 30) {
+                phase = 3;
+                primes = "[2, 3, 5, 7, ... 19, 23]";
+            }
+
+            const difficulty = getClassicDifficulty(defeated);
+            const classicCap = getClassicCap(defeated);
+            const maxTimeAllocated = getClassicTime(defeated);
+            const zenCap = getZenCap(zenTier);
+
+            // Points calculation based on exponential decay logic
+            const points = calculatePoints(difficulty, timeRatio);
+
+            // Write output results back to HTML visual elements safely
+            document.getElementById('outPhase').textContent = "Phase " + phase;
+            document.getElementById('outDifficulty').textContent = difficulty.toFixed(2) + "x";
+            document.getElementById('outClassicCap').textContent = classicCap.toLocaleString();
+            document.getElementById('outClassicTime').textContent = maxTimeAllocated.toFixed(2) + "s";
+            document.getElementById('outZenCap').textContent = zenCap.toLocaleString();
+            document.getElementById('outPoints').textContent = points + " pts";
+            document.getElementById('outPrimes').textContent = primes;
+
+            // Render live formula step breakdown
+            const expRatio = Math.pow(timeRatio, 0.55);
+            const exactStep = 10 * difficulty * expRatio;
+            
+            document.getElementById('outFormulaStep').innerHTML = `
+                <div class="text-xs space-y-2 font-mono text-fdim leading-relaxed">
+                    <p class="text-accent font-bold mb-1">📐 ALGEBRAIC RESOLUTION LOG</p>
+                    <p>1. Formula: <code class="text-fg bg-cardbg px-1 rounded">Points = ⌈10 × Difficulty × (TimeRatio)^0.55⌉</code></p>
+                    <p>2. Values:  <code class="text-fg bg-cardbg px-1 rounded">Difficulty = ${difficulty.toFixed(2)}x</code> | <code class="text-fg bg-cardbg px-1 rounded">TimeRatio = ${timeRatio.toFixed(2)}</code></p>
+                    <p>3. Decay Factor: <code class="text-fg bg-cardbg px-1 rounded">(${timeRatio.toFixed(2)})^0.55 = ${expRatio.toFixed(4)}</code></p>
+                    <p>4. Product: <code class="text-fg bg-cardbg px-1 rounded">10 × ${difficulty.toFixed(2)} × ${expRatio.toFixed(4)} = ${exactStep.toFixed(4)}</code></p>
+                    <p class="pt-2 border-t border-fdim/10 text-sm">Result: <code class="text-accent font-bold bg-darkbg px-2 py-0.5 border border-accent/20 rounded">⌈${exactStep.toFixed(4)}⌉ = ${points} Points</code></p>
+                </div>
+            `;
+
+            // Trigger reactive chart redraws with updated baseline values
+            updateDecayChart(difficulty);
+        }
+
+        function initCapChart() {
+            const ctx = document.getElementById('capChart').getContext('2d');
+            const colors = getThemeColors();
+            
+            const standardData = [];
+            const zenLabels = [];
+            const zenData = [];
+
+            for (let i = 1; i <= 20; i++) {
+                standardData.push(getClassicCap(i));
+                zenLabels.push('Tier ' + i);
+                zenData.push(getZenCap(i));
+            }
+
+            capChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: zenLabels,
+                    datasets: [
+                        {
+                            label: 'Zen Spawning Cap',
+                            data: zenData,
+                            borderColor: colors.accent,
+                            backgroundColor: colors.chartBgAccent,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Classic Mode Spawning Cap',
+                            data: standardData,
+                            borderColor: colors.danger,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: colors.fg,
+                                font: { family: 'Courier New', size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + Number(context.raw).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.chartGrid },
+                            ticks: { color: colors.fgDim, font: { family: 'Courier New', size: 10 } }
+                        },
+                        y: {
+                            type: activeScaleMode,
+                            grid: { color: colors.chartGrid },
+                            ticks: { 
+                                color: colors.fgDim, 
+                                font: { family: 'Courier New', size: 10 },
+                                callback: function(value) {
+                                    return Number(value).toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Toggle Spawning Cap Chart scale mode dynamically
+        function toggleCapScale(scaleType) {
+            activeScaleMode = scaleType;
+            
+            const btnLog = document.getElementById('btnScaleLog');
+            const btnLin = document.getElementById('btnScaleLinear');
+
+            if (scaleType === 'logarithmic') {
+                btnLog.classList.add('active');
+                btnLin.classList.remove('active');
+            } else {
+                btnLin.classList.add('active');
+                btnLog.classList.remove('active');
+            }
+
+            if (capChartInstance) {
+                capChartInstance.options.scales.y.type = scaleType;
+                capChartInstance.update();
+            }
+        }
+
+        function initDecayChart() {
+            const ctx = document.getElementById('decayChart').getContext('2d');
+            const colors = getThemeColors();
+            const ratios = [];
+            const data = [];
+
+            for (let r = 100; r >= 0; r -= 5) {
+                ratios.push(r + '%');
+                data.push(0);
+            }
+
+            decayChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ratios,
+                    datasets: [{
+                        label: 'Points Earned',
+                        data: data,
+                        borderColor: colors.accent,
+                        backgroundColor: colors.chartBgAccent,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time Remaining Ratio', color: colors.fgDim, font: { family: 'Courier New', size: 9 } },
+                            grid: { color: colors.chartGrid },
+                            ticks: { color: colors.fgDim, font: { family: 'Courier New', size: 9 } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Points', color: colors.fgDim, font: { family: 'Courier New', size: 9 } },
+                            grid: { color: colors.chartGrid },
+                            ticks: { color: colors.fgDim, font: { family: 'Courier New', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDecayChart(difficulty) {
+            if (!decayChartInstance) return;
+
+            const updatedData = [];
+            for (let r = 100; r >= 0; r -= 5) {
+                const ratio = r / 100;
+                const points = calculatePoints(difficulty, ratio);
+                updatedData.push(points);
+            }
+
+            decayChartInstance.data.datasets[0].data = updatedData;
+            decayChartInstance.update();
+        }
+
+        function initTimerChart() {
+            const ctx = document.getElementById('timerChart').getContext('2d');
+            const colors = getThemeColors();
+            const defeatedMetrics = [];
+            const times = [];
+
+            // Compute values from 0 to 45 numbers defeated
+            for (let n = 0; n <= 45; n += 3) {
+                defeatedMetrics.push('n=' + n);
+                times.push(getClassicTime(n).toFixed(2));
+            }
+
+            timerChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: defeatedMetrics,
+                    datasets: [{
+                        label: 'Max Allocated Timer (seconds)',
+                        data: times,
+                        backgroundColor: function(context) {
+                            const val = context.dataIndex;
+                            if (val <= 5) return colors.phase1Color; // Phase 1 Color
+                            if (val <= 10) return colors.phase2Color; // Phase 2 Color
+                            return colors.phase3Color; // Phase 3 Color
+                        },
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.chartGrid },
+                            ticks: { color: colors.fgDim, font: { family: 'Courier New', size: 9 } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Timer Seconds', color: colors.fgDim, font: { family: 'Courier New', size: 9 } },
+                            grid: { color: colors.chartGrid },
+                            ticks: { color: colors.fgDim, font: { family: 'Courier New', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartThemes() {
+            const colors = getThemeColors();
+            
+            // Redraw Spawning Cap chart elements to match dynamic light override
+            if (capChartInstance) {
+                capChartInstance.options.plugins.legend.labels.color = colors.fg;
+                capChartInstance.options.scales.x.grid.color = colors.chartGrid;
+                capChartInstance.options.scales.x.ticks.color = colors.fgDim;
+                capChartInstance.options.scales.y.grid.color = colors.chartGrid;
+                capChartInstance.options.scales.y.ticks.color = colors.fgDim;
+                capChartInstance.data.datasets[0].borderColor = colors.accent;
+                capChartInstance.data.datasets[0].backgroundColor = colors.chartBgAccent;
+                capChartInstance.data.datasets[1].borderColor = colors.danger;
+                capChartInstance.update();
+            }
+
+            // Redraw Points Decay chart elements
+            if (decayChartInstance) {
+                decayChartInstance.options.scales.x.title.color = colors.fgDim;
+                decayChartInstance.options.scales.x.grid.color = colors.chartGrid;
+                decayChartInstance.options.scales.x.ticks.color = colors.fgDim;
+                decayChartInstance.options.scales.y.title.color = colors.fgDim;
+                decayChartInstance.options.scales.y.grid.color = colors.chartGrid;
+                decayChartInstance.options.scales.y.ticks.color = colors.fgDim;
+                decayChartInstance.data.datasets[0].borderColor = colors.accent;
+                decayChartInstance.data.datasets[0].backgroundColor = colors.chartBgAccent;
+                decayChartInstance.update();
+            }
+
+            // Redraw Timer Scale bar chart components
+            if (timerChartInstance) {
+                timerChartInstance.options.scales.x.grid.color = colors.chartGrid;
+                timerChartInstance.options.scales.x.ticks.color = colors.fgDim;
+                timerChartInstance.options.scales.y.title.color = colors.fgDim;
+                timerChartInstance.options.scales.y.grid.color = colors.chartGrid;
+                timerChartInstance.options.scales.y.ticks.color = colors.fgDim;
+                timerChartInstance.data.datasets[0].backgroundColor = function(context) {
+                    const val = context.dataIndex;
+                    if (val <= 5) return colors.phase1Color;
+                    if (val <= 10) return colors.phase2Color;
+                    return colors.phase3Color;
+                };
+                timerChartInstance.update();
+            }
+        }
+    </script>
+</body>
+</html>
